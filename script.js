@@ -1416,89 +1416,82 @@ function closeForensicModalAndShowSuccess() {
 
 function showInstantSuccessPage() {
     console.log("showInstantSuccessPage called");
-    const paymentPage = document.getElementById('paymentPageContainer');
-    const successPage = document.getElementById('successPage');
-    console.log("Payment page element:", paymentPage);
-    console.log("Success page element:", successPage);
+    const paymentPage = document.getElementById("paymentPageContainer");
+    const successPage = document.getElementById("successPage");
     
-    // Add this inside your showInstantSuccessPage function in script.js
-	const successContainer = document.querySelector('.success-container');
-	console.log("Success container:", successContainer);
-	if (successContainer) {
-    const backupNotice = `
-        <div style="background: #FFF7ED; border: 1px solid #FFEDD5; padding: 15px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #F59E0B;">
-            <p style="color: #9A3412; font-weight: 700; font-size: 0.9rem;">
-                💾 PLEASE DOWNLOAD YOUR PDF NOW
-            </p>
-            <p style="color: #C2410C; font-size: 0.8rem; margin-top: 5px;">
-                We have sent a summary to your email, but the full 15-year roadmap is only saved locally on this browser. Download the PDF to keep it forever.
-            </p>
-        </div>
-    `;
-    successContainer.insertAdjacentHTML('afterbegin', backupNotice);
-}	
+    // Ensure data is fresh
+    const lastOrderId = localStorage.getItem("aptskola_last_order_id");
+    const sessionData = JSON.parse(localStorage.getItem("aptskola_session_" + lastOrderId));
+    if (sessionData) {
+        answers = sessionData.answers;
+        customerData = sessionData.customerData;
+        selectedPackage = sessionData.selectedPackage;
+        selectedPrice = sessionData.selectedPrice;
+    }
+
+    const successContainer = document.querySelector(".success-container");
+    if (successContainer) {
+        const backupNotice = `
+            <div style="background: #FFF7ED; border: 1px solid #FFEDD5; padding: 15px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #F59E0B;">
+                <p style="color: #9A3412; font-weight: 700; font-size: 0.9rem;">
+                    💾 PLEASE DOWNLOAD YOUR PDF NOW
+                </p>
+                <p style="color: #C2410C; font-size: 0.8rem; margin-top: 5px;">
+                    We have sent a summary to your email, but the full 15-year roadmap is only saved locally on this browser. Download the PDF to keep it forever.
+                </p>
+            </div>
+        `;
+        if (!successContainer.querySelector("div[style*=\"background: #FFF7ED\"]")) {
+            successContainer.insertAdjacentHTML("afterbegin", backupNotice);
+        }
+    }
+
     if(paymentPage) {
-        paymentPage.classList.add('hidden');
-        console.log("Payment page hidden");
+        paymentPage.classList.add("hidden");
     }
     if(successPage) {
-        successPage.classList.remove('hidden');
-        successPage.classList.add('active');
-        console.log("Success page shown");
+        successPage.classList.remove("hidden");
+        successPage.classList.add("active");
+        window.scrollTo({ top: 0, behavior: "instant" });
         
-        // Scroll to top to show the success page
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        
-        // Wait a bit for DOM to update, then check for buttons
         setTimeout(() => {
-            // Disable download and share buttons initially
-            const downloadBtn = document.getElementById('downloadBtn');
-            const shareBtn = document.getElementById('shareBtn');
-            console.log("Looking for buttons after DOM update - Download btn:", downloadBtn, "Share btn:", shareBtn);
-            console.log("Disabling buttons initially - Download btn:", downloadBtn, "Share btn:", shareBtn);
-            if (downloadBtn) {
-                downloadBtn.style.pointerEvents = 'none';
-                downloadBtn.style.opacity = '0.6';
-                downloadBtn.textContent = 'Generating Report...';
-                console.log("Download button disabled");
-            }
-            if (shareBtn) {
-                shareBtn.style.pointerEvents = 'none';
-                shareBtn.style.opacity = '0.6';
-                shareBtn.textContent = 'Generating Report...';
-                console.log("Share button disabled");
-            }
-            
-            // Ensure report is rendered
-            // Note: Report is already rendered in the payment handler, just enable buttons
-            console.log("Enabling buttons after report should be ready");
-            // Re-enable buttons after report is rendered
-            if (downloadBtn) {
-                downloadBtn.style.pointerEvents = 'auto';
-                downloadBtn.style.opacity = '1';
-                downloadBtn.textContent = 'Download Report ⬇️';
-                console.log("Download button enabled");
-            }
-            if (shareBtn) {
-                shareBtn.style.pointerEvents = 'auto';
-                shareBtn.style.opacity = '1';
-                shareBtn.textContent = 'Share Report 📲';
-                console.log("Share button enabled");
-            }
+            const downloadBtn = document.getElementById("downloadBtn");
+            const shareBtn = document.getElementById("shareBtn");
+            const reportEl = document.getElementById("reportPreview");
+
+            if (downloadBtn) downloadBtn.disabled = true;
+            if (shareBtn) shareBtn.disabled = true;
+
+            const checkReportReady = setInterval(() => {
+                if (reportEl && reportEl.innerHTML.trim().length > 100) {
+                    clearInterval(checkReportReady);
+                    if (downloadBtn) {
+                        downloadBtn.disabled = false;
+                        downloadBtn.style.pointerEvents = "auto";
+                        downloadBtn.style.opacity = "1";
+                        downloadBtn.textContent = "Download Report ⬇️";
+                    }
+                    if (shareBtn) {
+                        shareBtn.disabled = false;
+                        shareBtn.style.pointerEvents = "auto";
+                        shareBtn.style.opacity = "1";
+                        shareBtn.textContent = "Share Report 📲";
+                    }
+                }
+            }, 500);
         }, 100);
         
-        // Set Order ID
-        const displayOrderId = document.getElementById('displayOrderId');
-        if (displayOrderId) displayOrderId.textContent = customerData.orderId || 'N/A';
+        const displayOrderId = document.getElementById("displayOrderId");
+        if (displayOrderId) displayOrderId.textContent = customerData.orderId || "N/A";
     }
     
     if (selectedPrice >= 1499) {
-        const ticket = document.getElementById('goldenTicketContainer');
-        if (ticket) ticket.style.display = 'block';
+        const ticket = document.getElementById("goldenTicketContainer");
+        if (ticket) ticket.style.display = "block";
     }
 
-    const pNameEl = document.getElementById('successParentName');
-    if(pNameEl) pNameEl.innerText = customerData.parentName || 'Parent';
+    const pNameEl = document.getElementById("successParentName");
+    if(pNameEl) pNameEl.innerText = customerData.parentName || "Parent";
     
     const reportDiv = document.getElementById("reportPreview");
     if (reportDiv) {
@@ -1510,9 +1503,6 @@ function showInstantSuccessPage() {
     }
     window.scrollTo({ top: 0, behavior: "instant" });
 }
-
-// --- SYNC MATCH CALCULATION ---
-function calculateSyncMatch() {
 
 // --- SYNC MATCH CALCULATION ---
 function calculateSyncMatch() {
@@ -1530,13 +1520,12 @@ function calculateSyncMatch() {
 
     let dnaScores = { "CBSE": 0, "IB": 0, "ICSE": 0, "State": 0 };
     for(let i=16; i<=30; i++) {
-        let val = answers['q'+i];
+        let val = answers["q"+i];
         if(val === undefined) continue;
-        let multiplier = (i === 30) ? 2.0 : 1.0; 
-        if(val === 0) dnaScores["CBSE"] += multiplier;
-        if(val === 1) dnaScores["IB"] += multiplier;
-        if(val === 2) dnaScores["ICSE"] += multiplier;
-        if(val === 3) dnaScores["State"] += multiplier;
+        if(val === 0) dnaScores["CBSE"]++;
+        if(val === 1) dnaScores["IB"]++;
+        if(val === 2) dnaScores["ICSE"]++;
+        if(val === 3) dnaScores["State"]++;
     }
     let topDNA = Object.keys(dnaScores).reduce((a, b) => dnaScores[a] > dnaScores[b] ? a : b);
     
@@ -1545,11 +1534,9 @@ function calculateSyncMatch() {
     
     let normalizedDNA = mappings[topDNA] || topDNA;
     let isConflict = (parentRec !== normalizedDNA);
-    let alignmentScore = isConflict ? 45 : 92;
 
-    const manualDisclaimer = isManualSync ? `<p style="text-align: center; font-size: 0.75rem; color: #94A3B8; margin-bottom: 10px;">⚠️ Sync generated via Manual Input from Phase 1 Report.</p>` : '';
+    const manualDisclaimer = isManualSync ? `<p style="text-align: center; font-size: 0.75rem; color: #94A3B8; margin-bottom: 10px;">⚠️ Sync generated via Manual Input from Phase 1 Report.</p>` : "";
 
-    // REVISED: Forensic Bridge Narrative (Min 5 Lines)
 	let bridgeHtml = isConflict ? `
 		<div class="report-card" style="border: 2px solid var(--sunrise-primary); background: #FFF9F2; margin-top: 20px;">
 			<h3 style="color: var(--navy-premium); font-weight: 800; font-size: 1.2rem; margin-bottom: 10px;">Bridge Narrative: Conflict Resolution</h3>
@@ -1573,7 +1560,7 @@ function calculateSyncMatch() {
         </p>
     </div>`;
 
-    const successPage = document.getElementById('successPage');
+    const successPage = document.getElementById("successPage");
     if(successPage) {
         successPage.innerHTML = `
             ${getIntermediateHeaderHtml()}
@@ -1592,28 +1579,74 @@ function calculateSyncMatch() {
                         </div>
                     </div>
                     ${bridgeHtml}
-                    ${ambassadorButtonHtml}
-                    ${xrayCardHtml}
-                                        ${fovizBannerHtml}
                     <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top:30px; margin-bottom:30px; width:100%;">
                         <button class="custom-cta-button" style="flex:1; min-width:200px; padding: 18px 20px; font-size: 1.1rem;" onclick="downloadReport()" id="downloadBtn">Download Sync Report ⬇️</button>
                         <button class="custom-cta-button" style="flex:1; min-width:200px; padding: 18px 20px; font-size: 1.1rem; background: var(--navy-premium);" onclick="sharePDF()" id="shareBtn">Share Sync Report 📲</button>
                     </div>
+                    ${ambassadorButtonHtml}
+                    ${xrayCardHtml}
+                    ${fovizBannerHtml}
                     <button class="custom-cta-button" style="background: transparent; color: var(--navy-light); border: 1px solid var(--border-grey); margin-top:10px;" onclick="endFullSession()">End Session</button>
                 </div>
             </div>
             ${getIntermediateFooterHtml()}
         `;
-        successPage.classList.remove('hidden');
-        successPage.classList.add('active');
+        successPage.classList.remove("hidden");
+        successPage.classList.add("active");
+        triggerSyncAutomatedEmail();
     }
 }
 
 function endFullSession() {
-    if (customerData.orderId && customerData.orderId !== 'N/A') {
-        localStorage.removeItem(`aptskola_session_${customerData.orderId}`);
+    if (customerData.orderId && customerData.orderId !== "N/A") {
+        localStorage.removeItem("aptskola_session_" + customerData.orderId);
     }
     goToLandingPage();
+}
+
+async function triggerSyncAutomatedEmail() {
+    console.log("CTO: Sending Sync Match Email...");
+    const res = calculateFullRecommendation(answers);
+    const parentRec = res.recommended.name;
+    
+    let dnaScores = { "CBSE": 0, "IB": 0, "ICSE": 0, "State": 0 };
+    for(let i=16; i<=30; i++) {
+        let val = answers["q"+i];
+        if(val === undefined) continue;
+        if(val === 0) dnaScores["CBSE"]++;
+        if(val === 1) dnaScores["IB"]++;
+        if(val === 2) dnaScores["ICSE"]++;
+        if(val === 3) dnaScores["State"]++;
+    }
+    let topDNA = Object.keys(dnaScores).reduce((a, b) => dnaScores[a] > dnaScores[b] ? a : b);
+    const mappings = { "CBSE": "CBSE", "IB": "IB", "ICSE": "ICSE", "State": "State Board" };
+    let normalizedDNA = mappings[topDNA] || topDNA;
+    
+    let htmlSummary = `
+        <div style="border: 1px solid #E2E8F0; border-radius: 16px; overflow: hidden; font-family: sans-serif; margin: 20px 0;">
+            <div style="background-color: #0F172A; color: #ffffff; padding: 25px; text-align: center;">
+                <h2 style="margin: 0; font-size: 22px; letter-spacing: 0.5px;">Sync Match Verification Report</h2>
+            </div>
+            <div style="padding: 25px; background-color: #ffffff; color: #334155;">
+                <p><strong>Parent Vision:</strong> ${parentRec}</p>
+                <p><strong>Child DNA Match:</strong> ${normalizedDNA}</p>
+                <p style="margin-top: 15px; font-weight: bold;">Status: ${parentRec === normalizedDNA ? "PERFECT ALIGNMENT" : "HYBRID STRATEGY RECOMMENDED"}</p>
+            </div>
+        </div>
+    `;
+
+    try {
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+            user_email: customerData.email,
+            user_name: customerData.parentName,
+            order_id: customerData.orderId,
+            child_name: customerData.childName,
+            report_text_summary: htmlSummary 
+        });
+        console.log("Sync email sent successfully");
+    } catch (e) {
+        console.error("Sync email failed:", e);
+    }
 }
 
 async function renderReportToBrowser() {
