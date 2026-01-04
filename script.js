@@ -1199,6 +1199,7 @@ function redirectToRazorpay() {
         "key": RAZORPAY_KEY_ID, 
         "amount": amountInPaise, 
         "currency": "INR",
+        "payment_capture": 1,
         "name": "Apt Skola",
         "description": `Payment for ${selectedPackage} Report`,
         "image": "https://aptskola.com/favicon.png", 
@@ -1367,6 +1368,7 @@ function processSyncUpgrade() {
         "key": RAZORPAY_KEY_ID,
         "amount": 29900, // ₹299 in Paise
         "currency": "INR",
+        "payment_capture": 1,
         "name": "Apt Skola",
         "description": "Sync Match Module Upgrade",
         "prefill": {
