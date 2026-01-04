@@ -1500,18 +1500,19 @@ function showInstantSuccessPage() {
     const pNameEl = document.getElementById('successParentName');
     if(pNameEl) pNameEl.innerText = customerData.parentName || 'Parent';
     
-    const reportDiv = document.getElementById('reportPreview');
-    if(reportDiv) {
-        reportDiv.classList.remove('off-screen-render');
-        const dlBtn = document.getElementById('downloadBtn');
-        if(dlBtn && dlBtn.parentNode && dlBtn.parentNode.parentNode) {
-            const container = dlBtn.parentNode.parentNode;
-            container.insertBefore(reportDiv, dlBtn.parentNode.nextSibling);
+    const reportDiv = document.getElementById("reportPreview");
+    if (reportDiv) {
+        reportDiv.classList.remove("off-screen-render");
+        const btnContainer = document.querySelector(".success-container > div[style*=\"display:flex; gap:15px\"]");
+        if (btnContainer) {
+            btnContainer.parentNode.insertBefore(reportDiv, btnContainer);
         }
     }
-    
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: "instant" });
 }
+
+// --- SYNC MATCH CALCULATION ---
+function calculateSyncMatch() {
 
 // --- SYNC MATCH CALCULATION ---
 function calculateSyncMatch() {
@@ -1593,8 +1594,12 @@ function calculateSyncMatch() {
                     ${bridgeHtml}
                     ${ambassadorButtonHtml}
                     ${xrayCardHtml}
-                    ${fovizBannerHtml}
-                    <button class="custom-cta-button" style="margin-top:30px;" onclick="endFullSession()">End Session</button>
+                                        ${fovizBannerHtml}
+                    <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top:30px; margin-bottom:30px; width:100%;">
+                        <button class="custom-cta-button" style="flex:1; min-width:200px; padding: 18px 20px; font-size: 1.1rem;" onclick="downloadReport()" id="downloadBtn">Download Sync Report ⬇️</button>
+                        <button class="custom-cta-button" style="flex:1; min-width:200px; padding: 18px 20px; font-size: 1.1rem; background: var(--navy-premium);" onclick="sharePDF()" id="shareBtn">Share Sync Report 📲</button>
+                    </div>
+                    <button class="custom-cta-button" style="background: transparent; color: var(--navy-light); border: 1px solid var(--border-grey); margin-top:10px;" onclick="endFullSession()">End Session</button>
                 </div>
             </div>
             ${getIntermediateFooterHtml()}
