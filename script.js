@@ -1796,147 +1796,194 @@ async function renderReportToBrowser() {
     }
 }
 
+
+function hydrateData() {
+    if (!customerData || !customerData.orderId || customerData.orderId === "N/A") {
+        const lastOrderId = localStorage.getItem("aptskola_last_order_id");
+        if (lastOrderId) {
+            const sessionData = JSON.parse(localStorage.getItem("aptskola_session_" + lastOrderId));
+            if (sessionData) {
+                answers = sessionData.answers;
+                customerData = sessionData.customerData;
+                selectedPackage = sessionData.selectedPackage || sessionData.customerData.package;
+                selectedPrice = sessionData.selectedPrice || sessionData.customerData.amount;
+                console.log("Data hydrated for action.");
+            }
+        }
+    }
+}
+
+
 // --- OPTIMIZED: SMART PDF GENERATOR WITH NATIVE VECTOR HEADER ---
+
+function hydrateData() {
+    console.log("Hydrating data...");
+    if (!customerData || !customerData.orderId || customerData.orderId === "N/A") {
+        const lastOrderId = localStorage.getItem("aptskola_last_order_id");
+        if (lastOrderId) {
+            const sessionData = JSON.parse(localStorage.getItem("aptskola_session_" + lastOrderId));
+            if (sessionData) {
+                answers = sessionData.answers;
+                customerData = sessionData.customerData;
+                selectedPackage = sessionData.selectedPackage || (sessionData.customerData ? sessionData.customerData.package : "Essential");
+                selectedPrice = sessionData.selectedPrice || (sessionData.customerData ? sessionData.customerData.amount : 599);
+                console.log("Data hydrated successfully from localStorage");
+            }
+        }
+    }
+}
+
 async function downloadReport() {
-    console.log("Download button clicked - UserAgent:", navigator.userAgent);
-    console.log("Is mobile:", /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-    const { jsPDF } = window.jspdf;
-    if (!jsPDF) {
-        alert("PDF library not loaded. Please refresh the page.");
-        return;
-    }
-    const reportElement = document.getElementById('reportPreview');
-    console.log("Report element:", reportElement);
-    console.log("Report element innerHTML length:", reportElement ? reportElement.innerHTML.length : 'null');
-    if (!reportElement || !reportElement.innerHTML.trim()) {
-        alert("Report not generated yet. Please complete the assessment.");
-        return;
-    }
+    console.log("Download report triggered");
+    const btn = document.getElementById("downloadBtn");
+    const originalText = btn ? btn.textContent : "Download Report ⬇️";
     
-    // Target content blocks specifically, EXCLUDING the original visual header
-    const cards = reportElement.querySelectorAll('.report-card, .xray-card, .foviz-banner, .btn-ambassador');
-    
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const margin = 10;
-    const contentWidth = pdfWidth - (2 * margin);
-    
-    // --- NATIVE VECTOR HEADER RENDERING ---
-    // Brand Name
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(24);
-    pdf.setTextColor(15, 23, 42); // Navy
-    pdf.text("Apt", margin, 20);
-    pdf.setTextColor(255, 107, 53); // Orange
-    pdf.text("Skola", margin + 16, 20);
-    
-    // Identity Details
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
-    pdf.setTextColor(100, 116, 139); // Slate-500
-    pdf.text(`Order ID: ${customerData.orderId}`, margin, 33);
-    
-    let currentY = 45; // Offset logic: First card starts exactly below text header
-
-    for (let i = 0; i < cards.length; i++) {
-        const canvas = await html2canvas(cards[i], {
-            scale: 2,
-            useCORS: true,
-            logging: false
-        });
-
-        const imgData = canvas.toDataURL('image/jpeg', 0.8);
-        const imgProps = pdf.getImageProperties(imgData);
-        const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
-
-        if (currentY + imgHeight > pdfHeight - margin) {
-            pdf.addPage();
-            currentY = margin; 
+    try {
+        if (btn) {
+            btn.textContent = "Generating PDF...";
+            btn.disabled = true;
+            btn.style.opacity = "0.7";
         }
 
-        pdf.addImage(imgData, 'JPEG', margin, currentY, contentWidth, imgHeight);
-        currentY += imgHeight + 8;
-		
-		canvas.width = 0; canvas.height = 0; // Force memory release
-    }
+        hydrateData();
+        const { jsPDF } = window.jspdf;
+        const reportElement = document.getElementById("reportPreview");
+        
+        if (!reportElement || !reportElement.innerHTML.trim()) {
+            alert("Report content not found. Generating now...");
+            await renderReportToBrowser();
+        }
 
-    const res = calculateFullRecommendation(answers);
-    const recBoard = res.recommended.name;
-    pdf.save(`Apt-Skola-${customerData.childName || 'Report'}-${recBoard}.pdf`);
+        const cards = reportElement.querySelectorAll(".report-card, .xray-card, .foviz-banner, .btn-ambassador");
+        const pdf = new jsPDF("p", "mm", "a4");
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        const contentWidth = pdfWidth - (2 * margin);
+        
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(24);
+        pdf.setTextColor(15, 23, 42);
+        pdf.text("Apt", margin, 20);
+        pdf.setTextColor(255, 107, 53);
+        pdf.text("Skola", margin + 16, 20);
+        
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 116, 139);
+        pdf.text("Order ID: " + (customerData.orderId || "N/A"), margin, 33);
+        
+        let currentY = 45;
+
+        for (let i = 0; i < cards.length; i++) {
+            const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, logging: false });
+            const imgData = canvas.toDataURL("image/jpeg", 0.8);
+            const imgProps = pdf.getImageProperties(imgData);
+            const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
+
+            if (currentY + imgHeight > pdfHeight - margin) {
+                pdf.addPage();
+                currentY = margin;
+            }
+            pdf.addImage(imgData, "JPEG", margin, currentY, contentWidth, imgHeight);
+            currentY += imgHeight + 8;
+        }
+
+        const res = calculateFullRecommendation(answers);
+        const recBoard = res.recommended.name;
+        pdf.save("Apt-Skola-" + (customerData.childName || "Report") + "-" + recBoard + ".pdf");
+    } catch (err) {
+        console.error("Download failed:", err);
+        alert("Download failed: " + err.message);
+    } finally {
+        if (btn) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        }
+    }
 }
 
 async function sharePDF() {
-    console.log("Share button clicked - UserAgent:", navigator.userAgent);
-    console.log("Is mobile:", /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-    if (!navigator.canShare || !navigator.share) {
-        alert("Your browser doesn't support direct file sharing. Please use the Download button.");
+    console.log("Share report triggered");
+    const btn = document.getElementById("shareBtn");
+    const originalText = btn ? btn.textContent : "Share Report 📲";
+
+    if (!navigator.share) {
+        alert("Sharing is not supported on this browser. Please use Download.");
         return;
     }
-
-    const { jsPDF } = window.jspdf;
-    if (!jsPDF) {
-        alert("PDF library not loaded. Please refresh the page.");
-        return;
-    }
-    const reportElement = document.getElementById('reportPreview');
-    console.log("Share - Report element:", reportElement);
-    console.log("Share - Report element innerHTML length:", reportElement ? reportElement.innerHTML.length : 'null');
-    if (!reportElement || !reportElement.innerHTML.trim()) {
-        alert("Report not generated yet. Please complete the assessment.");
-        return;
-    }
-    const cards = reportElement.querySelectorAll('.report-card, .xray-card, .foviz-banner, .btn-ambassador');
-    
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const margin = 10;
-    const contentWidth = pdfWidth - (2 * margin);
-    
-    // NATIVE HEADER (SYNCED WITH DOWNLOAD LOGIC)
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(24);
-    pdf.setTextColor(15, 23, 42);
-    pdf.text("Apt", margin, 20);
-    pdf.setTextColor(255, 107, 53);
-    pdf.text("Skola", margin + 16, 20);
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
-    pdf.setTextColor(100, 116, 139);
-    pdf.text(`Prepared for: ${customerData.childName || 'Student'}`, margin, 28);
-    pdf.text(`Order ID: ${customerData.orderId}`, margin, 33);
-    pdf.text(`Package: ${selectedPackage} Report`, margin, 38);
-
-    let currentY = 45;
-
-    for (let i = 0; i < cards.length; i++) {
-        const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, logging: false });
-        const imgData = canvas.toDataURL('image/jpeg', 0.8);
-        const imgProps = pdf.getImageProperties(imgData);
-        const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
-
-        if (currentY + imgHeight > pdfHeight - margin) {
-            pdf.addPage();
-            currentY = margin;
-        }
-        pdf.addImage(imgData, 'JPEG', margin, currentY, contentWidth, imgHeight);
-        currentY += imgHeight + 5;
-    }
-
-    const pdfBlob = pdf.output('blob');
-    const fileName = `Apt-Skola-${customerData.childName || 'Report'}.pdf`;
-    const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
     try {
+        if (btn) {
+            btn.textContent = "Preparing Share...";
+            btn.disabled = true;
+            btn.style.opacity = "0.7";
+        }
+
+        hydrateData();
+        const { jsPDF } = window.jspdf;
+        const reportElement = document.getElementById("reportPreview");
+        
+        if (!reportElement || !reportElement.innerHTML.trim()) {
+            await renderReportToBrowser();
+        }
+
+        const cards = reportElement.querySelectorAll(".report-card, .xray-card, .foviz-banner, .btn-ambassador");
+        const pdf = new jsPDF("p", "mm", "a4");
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        const contentWidth = pdfWidth - (2 * margin);
+        
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(24);
+        pdf.setTextColor(15, 23, 42);
+        pdf.text("Apt", margin, 20);
+        pdf.setTextColor(255, 107, 53);
+        pdf.text("Skola", margin + 16, 20);
+        
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 116, 139);
+        pdf.text("Prepared for: " + (customerData.childName || "Student"), margin, 28);
+        pdf.text("Order ID: " + (customerData.orderId || "N/A"), margin, 33);
+
+        let currentY = 45;
+
+        for (let i = 0; i < cards.length; i++) {
+            const canvas = await html2canvas(cards[i], { scale: 2, useCORS: true, logging: false });
+            const imgData = canvas.toDataURL("image/jpeg", 0.8);
+            const imgProps = pdf.getImageProperties(imgData);
+            const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
+
+            if (currentY + imgHeight > pdfHeight - margin) {
+                pdf.addPage();
+                currentY = margin;
+            }
+            pdf.addImage(imgData, "JPEG", margin, currentY, contentWidth, imgHeight);
+            currentY += imgHeight + 8;
+        }
+
+        const pdfBlob = pdf.output("blob");
+        const file = new File([pdfBlob], "Apt-Skola-Report.pdf", { type: "application/pdf" });
+
         await navigator.share({
             files: [file],
-            title: 'Apt Skola Board Match Report',
-            text: `Here is the scientific board match report for ${customerData.childName}.`
+            title: "Apt Skola Board Match Report",
+            text: "Here is the scientific board match report for " + (customerData.childName || "the student") + "."
         });
     } catch (err) {
-        console.error("Sharing failed:", err);
-        downloadReport(); 
+        console.error("Share failed:", err);
+        if (err.name !== "AbortError") {
+            alert("Share failed: " + err.message);
+        }
+    } finally {
+        if (btn) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+            btn.style.opacity = "1";
+        }
     }
 }
 
