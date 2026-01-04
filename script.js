@@ -1777,7 +1777,7 @@ async function renderReportToBrowser() {
 
 // --- UNIVERSAL FOOTER (Included in all packages) ---
     html += `
-        <div style="margin-top:40px; padding:20px; background:#F1F5F9; border-radius:8px; font-size:0.8rem; color:#64748B; text-align:justify;">
+        <div class="report-card" style="margin-top:40px; padding:20px; background:#F1F5F9; border-radius:8px; font-size:0.8rem; color:#64748B; text-align:justify;">
             <strong>DISCLAIMER:</strong> This report is advisory only. The final enrollment decision remains the sole responsibility of the parent. The outcome of this report is purely based on the user input provided..
         </div>
     `;
@@ -1794,6 +1794,7 @@ async function renderReportToBrowser() {
     } else {
         console.error("Report preview element not found!");
     }
+}
 
 // --- OPTIMIZED: SMART PDF GENERATOR WITH NATIVE VECTOR HEADER ---
 async function downloadReport() {
@@ -2136,5 +2137,4 @@ function recoverSessionEmail(targetEmail) {
     } else {
         alert("No assessment found for this email on this device.");
     }
-}
 }
