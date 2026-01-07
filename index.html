@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apt Skola</title>
+    <title>Apt Skola | Scientific School Board Selection</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
@@ -13,131 +13,245 @@
                     colors: {
                         'navy-premium': '#0F172A',
                         'sunrise-orange': '#FF6B35',
+                        'muted-grey': '#64748B',
                     }
                 }
             }
         }
     </script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .pulse {
-            animation: pulse-animation 2s infinite;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .pulse { animation: pulse-animation 2s infinite; }
         @keyframes pulse-animation {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(255, 107, 53, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
-            }
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 107, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0); }
         }
+        .hidden { display: none; }
+        .quiz-option { cursor: pointer; transition: all 0.2s; }
+        .quiz-option:hover { border-color: #FF6B35; background-color: rgba(255, 107, 53, 0.05); }
+        .quiz-option.selected { border-color: #FF6B35; background-color: rgba(255, 107, 53, 0.1); }
     </style>
 </head>
 <body class="bg-navy-premium text-white">
-    <header class="fixed top-0 left-0 right-0 bg-navy-premium z-10">
+    <header class="fixed top-0 left-0 right-0 bg-navy-premium z-50 border-b border-gray-800">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold">Apt Skola</h1>
-            <a href="#/access" class="border border-white rounded-full px-4 py-2 text-sm">Access My Audit</a>
+            <div class="text-2xl font-extrabold cursor-pointer" onclick="location.hash='/'">Apt <span class="text-sunrise-orange">Skola</span></div>
+            <a href="#/access" class="border border-white/30 rounded-full px-4 py-2 text-sm font-semibold hover:bg-white hover:text-navy-premium transition">Access My Audit</a>
         </div>
     </header>
 
     <main id="content" class="pt-16">
-        <section id="/" class="container mx-auto px-6 py-24 text-center">
-            <h2 class="text-4xl font-bold mb-4">Stop Guessing. Start Knowing.</h2>
-            <p class="text-lg mb-8">Find the perfect school board for your child's unique learning style.</p>
-            <button id="start-analysis-btn" class="bg-sunrise-orange text-white font-bold rounded-full px-8 py-4 pulse">Start My Learning Fitment Analysis</button>
-        </section>
+        <!-- Path / (The Acquisition Funnel) -->
+        <section id="funnel" class="container mx-auto px-6 py-24 text-center">
+            <div id="hero">
+                <h2 class="text-5xl md:text-6xl font-black mb-6">Stop Guessing. <br><span class="text-sunrise-orange">Start Knowing.</span></h2>
+                <p class="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">Find the perfect school board for your child's unique learning style in 5 minutes.</p>
+                <button onclick="startQuiz()" class="bg-sunrise-orange text-white font-black rounded-full px-10 py-5 text-lg shadow-lg pulse">Start My Learning Fitment Analysis</button>
+            </div>
 
-        <section id="quiz" class="hidden container mx-auto px-6 py-24">
-            <h2 class="text-3xl font-bold text-center mb-8">The "Surgical IT Parent" Diagnostic</h2>
-            <div id="quiz-questions"></div>
-        </section>
-
-        <section id="aha-alert" class="hidden container mx-auto px-6 py-24 text-center">
-            <h2 class="text-3xl font-bold text-sunrise-orange mb-4">Aha! Alert</h2>
-            <p class="text-lg mb-8">High Burnout Risk Detected. Your child's learning style may not match the common teaching methods.</p>
-            <button id="unlock-report-btn" class="bg-sunrise-orange text-white font-bold rounded-full px-8 py-4">Unlock Full 15-Year Report →</button>
-        </section>
-
-        <section id="pricing" class="hidden container mx-auto px-6 py-24">
-            <h2 class="text-3xl font-bold text-center mb-8">Unlock Your Child's Potential</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="border border-gray-700 rounded-lg p-8">
-                    <h3 class="text-xl font-bold mb-4">Tier 1</h3>
-                    <p class="text-4xl font-bold mb-4">₹599</p>
-                    <ul class="text-left">
-                        <li>Learning Fitment Analysis</li>
-                        <li>Board Deep Dive</li>
-                    </ul>
+            <!-- Phase 0: Diagnostic -->
+            <div id="quiz" class="hidden max-w-2xl mx-auto py-12">
+                <h3 class="text-3xl font-bold mb-8">The "Surgical IT Parent" Diagnostic</h3>
+                <div id="quiz-container">
+                    <div id="question-text" class="text-xl font-medium mb-8"></div>
+                    <div id="options-grid" class="grid grid-cols-1 gap-4 mb-12"></div>
+                    <div class="flex justify-between items-center">
+                        <button id="prev-btn" class="text-muted-grey font-bold hover:text-white transition hidden">← Previous</button>
+                        <button id="next-btn" class="bg-sunrise-orange text-white font-bold rounded-full px-8 py-3 ml-auto">Next →</button>
+                    </div>
                 </div>
-                <div class="border border-gray-700 rounded-lg p-8">
-                    <h3 class="text-xl font-bold mb-4">Tier 2</h3>
-                    <p class="text-4xl font-bold mb-4">₹999</p>
-                    <ul class="text-left">
-                        <li>All ₹599 features</li>
-                        <li>Parent-Child Sync Check (AS5-Key)</li>
-                        <li>15-Year Financial Forecast</li>
-                    </ul>
+            </div>
+
+            <!-- Scanning Transition -->
+            <div id="scanning" class="hidden py-24">
+                <div class="text-4xl font-black text-sunrise-orange mb-4 animate-pulse">Scanning DNA...</div>
+                <p class="text-gray-400">Analyzing cognitive patterns and future fitment.</p>
+            </div>
+
+            <!-- Phase 1: The Bridge -->
+            <div id="aha-alert" class="hidden py-12 text-center">
+                <h3 class="text-4xl font-black text-sunrise-orange mb-6">Aha! Alert</h3>
+                <div class="bg-red-900/20 border border-red-500/50 rounded-2xl p-8 mb-12 max-w-xl mx-auto">
+                    <p class="text-2xl font-bold mb-4">High Burnout Risk Detected</p>
+                    <p class="text-gray-300">Your child's "Deep Thinker" profile might be stifled in a high-volume, standardized environment.</p>
                 </div>
-                <div class="border-4 border-sunrise-orange rounded-lg p-8 relative">
-                    <span class="absolute top-0 right-0 bg-sunrise-orange text-white text-xs font-bold px-2 py-1 rounded-bl-lg">40% OFF</span>
-                    <h3 class="text-xl font-bold mb-4">Tier 3</h3>
-                    <p class="text-4xl font-bold mb-4">₹1,499</p>
-                    <ul class="text-left">
-                        <li>All ₹999 features</li>
-                        <li>School X-Ray (Unlimited)</li>
-                        <li>Fee Negotiation Scripts</li>
-                        <li>Parent Interview Guide</li>
-                    </ul>
+                <button onclick="scrollToPricing()" class="bg-sunrise-orange text-white font-black rounded-full px-10 py-5 text-lg pulse">Unlock Full 15-Year Report →</button>
+            </div>
+
+            <!-- Pricing Table -->
+            <div id="pricing" class="hidden py-24">
+                <h2 class="text-4xl font-black mb-16">Choose Your Clarity Tier</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                    <!-- Tier 1 -->
+                    <div class="bg-gray-900/50 border border-gray-800 rounded-3xl p-8 flex flex-col">
+                        <h3 class="text-xl font-bold mb-2">The Starter</h3>
+                        <p class="text-muted-grey text-sm mb-6">Foundational Fitment</p>
+                        <div class="text-4xl font-black mb-8">₹599</div>
+                        <ul class="space-y-4 mb-12 flex-grow">
+                            <li class="flex items-start"><span class="text-sunrise-orange mr-2">✓</span> Learning Fitment Analysis</li>
+                            <li class="flex items-start"><span class="text-sunrise-orange mr-2">✓</span> Board Deep Dive</li>
+                        </ul>
+                        <button class="w-full py-4 rounded-xl border border-white/20 font-bold hover:bg-white hover:text-navy-premium transition">Get Started</button>
+                    </div>
+                    <!-- Tier 2 -->
+                    <div class="bg-gray-900/50 border-2 border-white/10 rounded-3xl p-8 flex flex-col relative scale-105 shadow-2xl">
+                        <h3 class="text-xl font-bold mb-2">The Strategic</h3>
+                        <p class="text-muted-grey text-sm mb-6">Complete Roadmap</p>
+                        <div class="text-4xl font-black mb-8">₹999</div>
+                        <ul class="space-y-4 mb-12 flex-grow">
+                            <li class="flex items-start"><span class="text-sunrise-orange mr-2">✓</span> All Starter Features</li>
+                            <li class="flex items-start"><span class="text-sunrise-orange mr-2">✓</span> Parent-Child Sync Check</li>
+                            <li class="flex items-start"><span class="text-sunrise-orange mr-2">✓</span> 15-Year Financial Forecast</li>
+                        </ul>
+                        <button class="w-full py-4 rounded-xl bg-white text-navy-premium font-bold hover:bg-gray-200 transition">Unlock Strategic Access</button>
+                    </div>
+                    <!-- Tier 3 -->
+                    <div class="bg-gray-900/50 border-4 border-sunrise-orange rounded-3xl p-8 flex flex-col relative">
+                        <div class="absolute -top-4 right-8 bg-sunrise-orange text-white text-xs font-black px-4 py-1 rounded-full uppercase tracking-widest">40% OFF</div>
+                        <h3 class="text-xl font-bold mb-2 text-sunrise-orange">The Elite</h3>
+                        <p class="text-muted-grey text-sm mb-6">Concierge Support</p>
+                        <div class="text-4xl font-black mb-8">₹1,499</div>
+                        <ul class="space-y-4 mb-12 flex-grow">
+                            <li class="flex items-start"><span class="text-sunrise-orange mr-2">✓</span> All Strategic Features</li>
+                            <li class="flex items-start"><span class="text-sunrise-orange mr-2">✓</span> School X-Ray (Unlimited)</li>
+                            <li class="flex items-start"><span class="text-sunrise-orange mr-2">✓</span> Fee Negotiation Scripts</li>
+                            <li class="flex items-start"><span class="text-sunrise-orange mr-2">✓</span> Parent Interview Guide</li>
+                        </ul>
+                        <button class="w-full py-4 rounded-xl bg-sunrise-orange text-white font-bold hover:bg-orange-600 transition shadow-lg">Become Elite Member</button>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section id="access" class="hidden container mx-auto px-6 py-24">
-            <h2 class="text-3xl font-bold text-center mb-8">Access Your Audit</h2>
+        <!-- Path /access -->
+        <section id="access" class="hidden container mx-auto px-6 py-24 text-center">
+            <h2 class="text-4xl font-black mb-6">Resume Your Journey</h2>
+            <p class="text-gray-400 mb-12">Enter your Audit Access Code (Order ID) to unlock your dashboard.</p>
             <div class="max-w-md mx-auto">
-                <input type="text" placeholder="Enter Your Order ID" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 mb-4">
-                <button class="w-full bg-sunrise-orange text-white font-bold rounded-full px-8 py-4">Unlock</button>
+                <input type="text" id="access-code" placeholder="e.g. AS1-XXXX" class="w-full bg-gray-900 border border-gray-700 rounded-2xl px-6 py-4 text-lg mb-6 focus:border-sunrise-orange outline-none transition">
+                <button onclick="validateAccess()" class="w-full bg-sunrise-orange text-white font-black rounded-full px-10 py-5 text-lg shadow-lg">Unlock Dashboard</button>
             </div>
         </section>
 
+        <!-- Path /dashboard -->
         <section id="dashboard" class="hidden container mx-auto px-6 py-24">
-            <h2 class="text-3xl font-bold text-center mb-8">Member Lab</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="border border-gray-700 rounded-lg p-8">
-                    <h3 class="text-xl font-bold mb-4">Phase 2: Sync Match</h3>
+            <h2 class="text-4xl font-black mb-4">Member Lab</h2>
+            <p class="text-gray-400 mb-12">Access your deep-dive reports and forensic tools.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Phase 1 Card (Always Unlocked if accessed) -->
+                <div class="bg-gray-900/50 border border-gray-800 rounded-3xl p-8 hover:border-sunrise-orange/50 transition">
+                    <div class="text-sunrise-orange font-bold text-xs uppercase tracking-widest mb-4">Phase 1</div>
+                    <h3 class="text-2xl font-bold mb-4">Learning Fitment Analysis</h3>
+                    <p class="text-gray-400 mb-8 text-sm">Your child's cognitive DNA and board match roadmap.</p>
+                    <button class="text-sunrise-orange font-bold hover:underline">View Report →</button>
                 </div>
-                <div class="border border-gray-700 rounded-lg p-8">
-                    <h3 class="text-xl font-bold mb-4">Phase 3: School X-Ray</h3>
+                <!-- Phase 2 Card -->
+                <div id="card-sync" class="bg-gray-900/50 border border-gray-800 rounded-3xl p-8 opacity-50 cursor-not-allowed">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-sunrise-orange font-bold text-xs uppercase tracking-widest">Phase 2</div>
+                        <span class="text-xs bg-gray-800 px-2 py-1 rounded">Locked</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Parent-Child Sync Check</h3>
+                    <p class="text-gray-400 mb-8 text-sm">Alignment analysis between parental expectations and child's natural engine.</p>
+                    <button disabled class="text-gray-600 font-bold">Requires Strategic Access</button>
+                </div>
+                <!-- Phase 3 Card -->
+                <div id="card-xray" class="bg-gray-900/50 border border-gray-800 rounded-3xl p-8 opacity-50 cursor-not-allowed">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-sunrise-orange font-bold text-xs uppercase tracking-widest">Phase 3</div>
+                        <span class="text-xs bg-gray-800 px-2 py-1 rounded">Locked</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">School X-Ray Forensic</h3>
+                    <p class="text-gray-400 mb-8 text-sm">Forensic audit tool for comparing specific institutes side-by-side.</p>
+                    <button disabled onclick="location.hash='/xray'" class="text-gray-600 font-bold">Requires Elite Access</button>
                 </div>
             </div>
         </section>
 
+        <!-- Path /xray -->
         <section id="xray" class="hidden container mx-auto px-6 py-24">
-            <h2 class="text-3xl font-bold text-center mb-8">School X-Ray</h2>
-            <p class="text-center mb-8">Deep-dive into specific institutes.</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div class="border border-gray-700 rounded-lg p-8">
-                    <h3 class="text-xl font-bold mb-4">1 School</h3>
-                    <p class="text-4xl font-bold mb-4">₹99</p>
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                <div>
+                    <h2 class="text-4xl font-black mb-4">Forensic Engine</h2>
+                    <p class="text-gray-400">Deep-dive into specific institutes. Data-backed comparison.</p>
                 </div>
-                <div class="border border-gray-700 rounded-lg p-8">
-                    <h3 class="text-xl font-bold mb-4">3 Schools</h3>
-                    <p class="text-4xl font-bold mb-4">₹199</p>
+                <div id="xray-credits" class="bg-gray-900 border border-gray-800 px-6 py-3 rounded-2xl hidden">
+                    <span class="text-gray-500 text-sm">Audits Remaining:</span>
+                    <span id="credit-count" class="text-sunrise-orange font-bold text-xl ml-2">3</span>
                 </div>
-                <div class="border border-gray-700 rounded-lg p-8">
-                    <h3 class="text-xl font-bold mb-4">5 Schools</h3>
-                    <p class="text-4xl font-bold mb-4">₹299</p>
+            </div>
+
+            <!-- Paywall for non-Elite -->
+            <div id="xray-paywall" class="bg-gray-900 border-2 border-sunrise-orange/30 rounded-3xl p-12 text-center max-w-4xl mx-auto hidden">
+                <h3 class="text-3xl font-bold mb-6">Unlock Forensic Audits</h3>
+                <p class="text-gray-400 mb-12">Your current tier does not include unlimited X-Rays. Choose a micro-transaction to proceed.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div class="bg-navy-premium border border-gray-800 p-8 rounded-2xl hover:border-sunrise-orange transition cursor-pointer">
+                        <div class="text-sm text-gray-500 mb-2">1 School</div>
+                        <div class="text-3xl font-black mb-4">₹99</div>
+                        <button class="text-sunrise-orange font-bold">Buy Now</button>
+                    </div>
+                    <div class="bg-navy-premium border border-sunrise-orange p-8 rounded-2xl shadow-xl transform scale-105 cursor-pointer">
+                        <div class="text-sm text-gray-500 mb-2">3 Schools</div>
+                        <div class="text-3xl font-black mb-4">₹199</div>
+                        <button class="bg-sunrise-orange text-white px-4 py-2 rounded-lg font-bold">Best Value</button>
+                    </div>
+                    <div class="bg-navy-premium border border-gray-800 p-8 rounded-2xl hover:border-sunrise-orange transition cursor-pointer">
+                        <div class="text-sm text-gray-500 mb-2">5 Schools</div>
+                        <div class="text-3xl font-black mb-4">₹299</div>
+                        <button class="text-sunrise-orange font-bold">Buy Now</button>
+                    </div>
+                </div>
+                <button onclick="location.hash='/dashboard'" class="text-muted-grey hover:text-white underline">Back to Dashboard</button>
+            </div>
+
+            <div id="xray-content" class="hidden">
+                <!-- Comparison Matrix Placeholder -->
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="text-left">
+                                <th class="p-6 border-b border-gray-800">Feature</th>
+                                <th class="p-6 border-b border-gray-800 text-sunrise-orange">Institute A</th>
+                                <th class="p-6 border-b border-gray-800 text-sunrise-orange">Institute B</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-300">
+                            <tr>
+                                <td class="p-6 border-b border-gray-800 font-bold">Annual Fees</td>
+                                <td class="p-6 border-b border-gray-800">₹2,40,000</td>
+                                <td class="p-6 border-b border-gray-800">₹3,80,000</td>
+                            </tr>
+                            <tr>
+                                <td class="p-6 border-b border-gray-800 font-bold">Infrastructure</td>
+                                <td class="p-6 border-b border-gray-800">Standard Labs, Sports</td>
+                                <td class="p-6 border-b border-gray-800">AI-Lab, Olympic Pool</td>
+                            </tr>
+                            <tr>
+                                <td class="p-6 border-b border-gray-800 font-bold">Career Exit ROI</td>
+                                <td class="p-6 border-b border-gray-800">85% (Domestic)</td>
+                                <td class="p-6 border-b border-gray-800">92% (Global)</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
-
     </main>
+
+    <footer class="py-12 border-t border-gray-800 text-center text-gray-500 text-sm">
+        <div class="container mx-auto px-6">
+            <div class="text-xl font-bold text-white mb-4">Apt <span class="text-sunrise-orange">Skola</span></div>
+            <p class="mb-8">A Foviz Venture &copy; 2024. All rights reserved.</p>
+            <div class="flex justify-center gap-8 mb-8">
+                <a href="#" class="hover:text-white">Privacy Policy</a>
+                <a href="#" class="hover:text-white">Terms of Service</a>
+                <a href="#" class="hover:text-white">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+
     <script src="script.js"></script>
 </body>
 </html>
