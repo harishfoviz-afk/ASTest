@@ -909,7 +909,7 @@ function calculateFullRecommendation(ansSet) {
 
 // --- FIXED SELECT PACKAGE LOGIC ---
 function selectPackage(pkg, price) {
-    if (window.currentPhase < 1 && !isSyncMatchMode) {
+    if (window.currentPhase === undefined && !isSyncMatchMode) {
         alert("Please finish the assessment first.");
         return;
     }
@@ -986,6 +986,7 @@ function proceedToQuiz(pkg, price) {
 
 
 function initializeQuizShell(index, phase = 0) {
+    console.log("initializeQuizShell called with index:", index, "phase:", phase);
     window.currentPhase = phase;
     const questionPages = document.getElementById('questionPages');
     if (!questionPages) return;
@@ -2089,6 +2090,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const candidates = [];
             const all = Array.from(document.querySelectorAll('body *'));
             all.forEach(el => {
+                if (el.closest('#react-hero-root')) return;
                 const style = window.getComputedStyle(el);
                 if (style.display === 'none' || style.visibility === 'hidden' || style.pointerEvents === 'none') return;
                 const rect = el.getBoundingClientRect();
