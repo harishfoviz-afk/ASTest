@@ -141,7 +141,7 @@ const Hero = () => {
       </div>
 
       {/* 5. The "Unstoppable" CTA Button */}
-      <div className="relative mt-16 group z-[9999]">
+      <div className="relative mt-16 group z-[40]">
         <div className="absolute -inset-4 bg-gradient-to-r from-[#FF6B35] via-orange-500 to-yellow-500 rounded-full blur-2xl opacity-40 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
         <button 
           onClick={() => triggerStart(0)}

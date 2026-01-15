@@ -909,6 +909,10 @@ function calculateFullRecommendation(ansSet) {
 
 // --- FIXED SELECT PACKAGE LOGIC ---
 function selectPackage(pkg, price) {
+    if (window.currentPhase < 1 && !isSyncMatchMode) {
+        alert("Please finish the assessment first.");
+        return;
+    }
     if (window.event) window.event.stopPropagation();
     selectedPackage = pkg;
     selectedPrice = price;
@@ -1001,32 +1005,14 @@ function initializeQuizShell(index, phase = 0) {
     const shellHtml = `
         <div id="questionPageApp" class="question-page active">
             ${getIntermediateHeaderHtml()}
-            <div class="question-content-wrapper"><div id="dynamicQuizContent" class="question-container"></div></div>
-            ${getIntermediateFooterHtml()}
-        </div>`;
-    questionPages.innerHTML = shellHtml;
-    renderQuestionContent(index);
-}
 
-            <div class="question-content-wrapper"><div id="dynamicQuizContent" class="question-container"></div></div>
-            ${getIntermediateFooterHtml()}
-        </div>`;
-    questionPages.innerHTML = shellHtml;
-    renderQuestionContent(index);
-}
 
-            <div class="question-content-wrapper"><div id="dynamicQuizContent" class="question-container"></div></div>
-            ${getIntermediateFooterHtml()}
-        </div>`;
-    questionPages.innerHTML = shellHtml;
-    renderQuestionContent(index);
-}
 
 
 function renderQuestionContent(index) {
     currentQuestion = index;
-    const currentQuestions = window.currentPhase === 0 ? phase0Questions : phase1Questions;
-    const totalQ = currentQuestions.length;
+    const questions = window.currentPhase === 0 ? phase0Questions : phase1Questions;
+    const totalQ = questions.length;
 
     if (index >= totalQ) {
         if (window.currentPhase === 0) {
@@ -1039,7 +1025,7 @@ function renderQuestionContent(index) {
         return;
     }
 
-    const q = currentQuestions[index];
+    const q = questions[index];
     if(!q) return;
 
     let qText = q.text;
@@ -1069,54 +1055,6 @@ function renderQuestionContent(index) {
             <div class="progress-container">
                 <div class="progress-track"><div class="progress-fill" style="width: ${progressPercent}%"></div></div>
                 <div class="progress-label">Phase ${window.currentPhase} - Question ${index + 1}/${totalQ}</div>
-            </div>
-            <div class="question-text">${qText}</div>
-            <div class="options-grid">${optionsHTML}</div>
-            <div style="text-align:center;">${prevBtnHtml}</div>
-        `;
-    }
-}
-
-    if (isSyncMatchMode && index >= 30) { 
-        const app = document.getElementById('questionPageApp');
-        if (app) app.classList.remove('active');
-        calculateSyncMatch(); 
-        return;
-    }
-
-    const q = questions[index];
-    if(!q) return;
-
-    let qText = q.text;
-    let qOptions = q.options || [];
-
-    if(q.isObservation) {
-        qText = q.text_variants[customerData.childAge] || q.text_variants["5-10"];
-        if(q.options_variants && q.options_variants[customerData.childAge]) {
-            qOptions = q.options_variants[customerData.childAge];
-        }
-    }
-
-    const totalQ = isSyncMatchMode ? 30 : 15;
-    const progressPercent = ((index + 1) / totalQ * 100).toFixed(0);
-
-    const optionsHTML = qOptions.map((opt, i) => {
-        const isSelected = answers[q.id] === i ? 'selected' : '';
-        return `<div class="option-card ${isSelected}" onclick="selectOption('${q.id}', ${i}, ${index}, this)">${opt}</div>`;
-    }).join('');
-
-    let prevBtnHtml = '';
-    const startIdx = isSyncMatchMode ? 15 : 0;
-    if (index > startIdx) {
-        prevBtnHtml = `<button onclick="renderQuestionContent(${index - 1})" class="btn-prev" style="margin-top:20px; background:none; text-decoration:underline; border:none; color:#64748B; cursor:pointer;">← Previous Question</button>`;
-    }
-
-    const dynamicQuizContent = document.getElementById('dynamicQuizContent');
-    if (dynamicQuizContent) {
-        dynamicQuizContent.innerHTML = `
-            <div class="progress-container">
-                <div class="progress-track"><div class="progress-fill" style="width: ${progressPercent}%"></div></div>
-                <div class="progress-label">Question ${index + 1}/${totalQ}</div>
             </div>
             <div class="question-text">${qText}</div>
             <div class="options-grid">${optionsHTML}</div>
@@ -1764,6 +1702,9 @@ async function renderReportToBrowser() {
         throw new Error(`Board data not found for key: ${boardKey}`);
     }
     const amount = sessionCustomerData.amount || 599;
+    const pkgName = sessionCustomerData.package || '';
+    const isPro = amount >= 1499 || pkgName === 'The Smart Parent Pro';
+    const isPremium = amount >= 999 || pkgName === 'Premium' || isPro;
 
     // --- BASE BLOCKS (Included in all tiers: ₹599, ₹999, ₹1499) ---
     let html = `
@@ -1834,7 +1775,7 @@ async function renderReportToBrowser() {
     `;
 
     // --- PREMIUM BLOCKS (₹999 and above) ---
-    if (amount >= 999) {
+    if (isPremium) {
         html += `
             <div class="report-card">
                 <div class="report-header-bg">🧐 RISK MITIGATION & VETTING</div>
@@ -1852,7 +1793,7 @@ async function renderReportToBrowser() {
     }
 
     // --- PRO BLOCKS (₹1499 only) ---
-    if (amount >= 1499) {
+    if (isPro) {
         html += `
             <div class="report-card">
                 <div class="report-header-bg">🤝 FEE NEGOTIATION STRATEGIES</div>
@@ -2156,6 +2097,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Preserve intentional modals by checking for common modal classes/ids
                     const lower = String(c.className).toLowerCase();
                     const id = String(c.id).toLowerCase();
+                    if (id === 'react-hero-root') return;
                     if (lower.includes('payment-modal') || lower.includes('sample-modal') || id.includes('redirect') || id.includes('modal') || c.el.classList.contains('active')) {
                         // if it's active modal, leave it; otherwise ensure it's visible and interactive
                         if (!c.el.classList.contains('active')) {
