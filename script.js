@@ -909,7 +909,7 @@ function calculateFullRecommendation(ansSet) {
 
 // --- FIXED SELECT PACKAGE LOGIC ---
 function selectPackage(pkg, price) {
-    if (window.currentPhase === undefined && !isSyncMatchMode) {
+    if (window.currentPhase < 1 && !isSyncMatchMode) {
         alert("Please finish the assessment first.");
         return;
     }
@@ -2105,7 +2105,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (candidates.length > 0) {
                 console.warn('Blocking elements detected:', candidates.map(c => ({id: c.id, class: c.className, z: c.z})));
+                // Only block if it is NOT one of our known interactive containers
                 candidates.forEach(c => {
+                    if (c.id === 'react-hero-root' || c.id === 'landingPage' || c.id === 'questionPages') return;
                     // Preserve intentional modals by checking for common modal classes/ids
                     const lower = String(c.className).toLowerCase();
                     const id = String(c.id).toLowerCase();
