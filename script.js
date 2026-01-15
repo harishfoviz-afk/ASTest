@@ -909,7 +909,7 @@ function calculateFullRecommendation(ansSet) {
 
 // --- FIXED SELECT PACKAGE LOGIC ---
 function selectPackage(pkg, price) {
-    if (window.currentPhase < 1 && !isSyncMatchMode) {
+    if (window.currentPhase !== 1 && window.currentPhase !== 2 && !isSyncMatchMode) {
         alert("Please finish the assessment first.");
         return;
     }
@@ -2057,7 +2057,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // 5. BUTTON SAFETY: Force Pricing Buttons to be active
-    const pricingButtons = document.querySelectorAll('#pricing button');
+    const pricingButtons = document.querySelectorAll('#pricingModal button');
     pricingButtons.forEach(btn => {
         btn.style.pointerEvents = 'auto';
         btn.style.cursor = 'pointer';
