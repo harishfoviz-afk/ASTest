@@ -992,12 +992,19 @@ function initializeQuizShell(index, phase = 0) {
     
     // Hide landing elements and flow containers
     const landing = document.getElementById('landingPage');
-    if (landing) landing.classList.remove('active');
-    document.getElementById('pricingModal').classList.remove('active');
-    document.getElementById('testimonials').classList.remove('active');
-    document.getElementById('educatorPartner').classList.remove('active');
-    document.getElementById('contact-and-policies').classList.remove('active');
-    document.getElementById('mainFooter').classList.remove('active');
+    if (landing) {
+        landing.classList.remove('active');
+        landing.classList.add('hidden');
+    }
+    
+    const elementsToHide = [
+        'pricingModal', 'testimonials', 'educatorPartner', 
+        'contact-and-policies', 'mainFooter'
+    ];
+    elementsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+    });
 
     const containers = document.querySelectorAll('.flow-container');
     containers.forEach(c => c.classList.remove('active'));
@@ -1005,9 +1012,12 @@ function initializeQuizShell(index, phase = 0) {
     const shellHtml = `
         <div id="questionPageApp" class="question-page active">
             ${getIntermediateHeaderHtml()}
-
-
-
+            <div class="question-content-wrapper"><div id="dynamicQuizContent" class="question-container"></div></div>
+            ${getIntermediateFooterHtml()}
+        </div>`;
+    questionPages.innerHTML = shellHtml;
+    renderQuestionContent(index);
+}
 
 function renderQuestionContent(index) {
     currentQuestion = index;
